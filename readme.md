@@ -6,7 +6,6 @@
 
 ---
 
-- [Homepage](https://www.totaljs.com/iam/)
 - MIT license
 
 ## Requirements
@@ -14,6 +13,7 @@
 - Node.js +v10
 - PostgreSQL +v11
 - Total.js framework +v3.3
+- DBMS module
 
 ## Installation
 
