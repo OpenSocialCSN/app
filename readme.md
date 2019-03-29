@@ -35,15 +35,5 @@ $ npm install
 - [ ] improve Admin / Apps section by adding list of users
 - [ ] add a missing documentation for OAuth 2.0
 
-## Funding
-
-This product is __100%__ sponsored by [LabLynx, Inc.](https://www.lablynx.com). It's written under MIT license.
-
-## Author
-
-- Total Avengers <info@totalavengers.com>
-- Developer: Peter Širka
-- <https://www.totalavengers.com>
-
 [license-image]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
 [license-url]: license.txt
