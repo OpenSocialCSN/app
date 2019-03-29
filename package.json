@@ -1,0 +1,22 @@
+{
+  "name": "OpenSocial",
+  "description": "OpenSocial is identity and access management.",
+  "version": "1.0.0",
+  "main": "release.js",
+  "dependencies": {
+    "total.js": "beta",
+    "pg": "latest",
+    "dbms": "latest"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "iam",
+    "identity",
+    "access",
+    "oauth2"
+  ],
+  "author":"Total Avengers",
+  "license": "MIT"
+}

@@ -1,0 +1,16 @@
+name                  : OpenSocial
+author                : Total Avengers
+
+// https://www.ipdata.co
+geoipkey              : YOUR_GEO_IP_KEY
+cookie                : __osauth
+authkey               : IAM_session
+url                   : https://iam.totaljs.com
+
+// SMTP settings
+mail_smtp             : smtp.yourwebsite.com
+mail_smtp_options     : {"secure":false,"port":25,"user":"","password":"","timeout":10000}
+mail_address_from     : your@yourwebsite.com
+mail_address_reply    : your@yourwebsite.com
+
+database              : postgresql://localhost:5432/opensocial
