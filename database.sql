@@ -354,6 +354,9 @@ SELECT
 FROM tbl_user_session a
 	LEFT JOIN tbl_app b ON b.id = a.appid AND b.isremoved = false AND b.isdisabled = false AND b.isinactive = false;
 
+CREATE VIEW view_user_oauth AS
+	SELECT a.id, a.userid, a.externalid, a.name, a.email, a.oauthid, b.name as oauthname, b.color as oauthcolor, a.isdisabled, a.dtlogged, a.dtcreated FROM tbl_user_oauth a INNER JOIN cl_oauth b ON b.id=a.oauthid AND b.isdisabled=FALSE AND b.isremoved=FALSE WHERE a.isremoved=FALSE;
+
 -- ===================================================
 -- FUNCTIONS
 -- ===================================================
