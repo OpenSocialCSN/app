@@ -301,7 +301,7 @@ CREATE VIEW view_user_logger AS
 		LEFT JOIN tbl_user_profile b ON b.id = a.profileid
 		LEFT JOIN tbl_user_device c ON c.id = a.deviceid
 		LEFT JOIN tbl_app d ON d.id = a.appid
-		LEFT JOIN cl_logger e ON e.id = a.loggerid
+		LEFT JOIN cl_logger e ON e.id = a.loggerid;
 
 CREATE VIEW view_user_session AS
 	SELECT
@@ -382,7 +382,7 @@ BEGIN
 
 	RETURN FALSE;
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.fn_userapps(a_userid character varying)
 	RETURNS TABLE(id character varying, name character varying, icon character varying, description character varying, url character varying, author character varying, email character varying, phone character varying, urlterms character varying, urlprivacy character varying)
@@ -391,7 +391,7 @@ AS $function$
 BEGIN
 	RETURN QUERY SELECT a.id, a."name", a.icon, a.description, a.url, a.author, a.email, a.phone, a.urlterms, a.urlprivacy FROM tbl_app a WHERE a.isremoved=FALSE AND a.isdisabled=FALSE AND a.id in (SELECT b.appid FROM tbl_user_session b WHERE b.isremoved=FALSE AND b.userid=a_userid);
 END;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION public.fn_userappsprofiles(a_userid character varying, a_appid character varying)
 	RETURNS TABLE(profileid character varying, userid character varying, name character varying, sessionid character varying)
@@ -400,4 +400,4 @@ AS $function$
 BEGIN
 	RETURN QUERY SELECT a.id as profileid, a.userid, a.name, (SELECT x.id FROM tbl_user_session x WHERE x.profileid=a.id AND x.appid=a_appid AND x.isremoved=false AND x.iscanceled=FALSE LIMIT 1) as sessionid FROM tbl_user_profile a WHERE a.userid=a_userid AND a.isconfirmed=TRUE AND a.isremoved=FALSE AND a.id IN (SELECT y.profileid FROM tbl_user_session y WHERE y.userid=a.userid AND y.appid=a_appid);
 END;
-$function$
+$function$;
