@@ -203,7 +203,7 @@ CREATE TABLE "public"."tbl_user_oauth" (
 	"oauthid" varchar(25),
 	"userid" varchar(25),
 	"externalid" varchar(50),
-	"token" varchar(100),
+	"accesstoken" varchar(4000),
 	"name" varchar(50),
 	"email" varchar(120),
 	"isdisabled" bool DEFAULT false,
