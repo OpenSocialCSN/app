@@ -4,6 +4,7 @@ exports.install = function() {
 	ROUTE('GET  /oauth/authorize/',                oauth_authorize);
 	ROUTE('GET  /oauth/token/                      *OAuth/Token       --> @exec');
 	ROUTE('GET  /oauth/profile/                    *OAuth/Profile     --> @exec');
+	ROUTE('GET  /oauth/logout/                     *OAuth/Logout      --> @exec');
 
 	// Internal API for OAuth
 	ROUTE('POST /api/oauth/authorize/              *OAuth/Authorize   --> @exec', ['authorize']);
