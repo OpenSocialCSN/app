@@ -787,8 +787,7 @@ COMPONENT('importer', function(self, config) {
 	};
 });
 
-COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
-
+COMPONENT('modal', 'zindex:12;width:800;bg:true;scrollbar:false', function(self, config) {
 	var cls = 'ui-modal';
 	var cls2 = '.' + cls;
 	var W = window;
@@ -838,7 +837,6 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 			}
 		});
 
-
 		if (!self.template)
 			self.prepare();
 
@@ -871,7 +869,6 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 			return;
 
 		var mobile = WIDTH() === 'xs';
-
 		var hh = eheader.height();
 		var hb = ebody.height();
 		var hf = efooter.height();
@@ -881,6 +878,12 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 		var top = ((WH - h) / 2.2) >> 0;
 		var width = mobile ? emodal.width() : config.width;
 		var ml = Math.ceil(width / 2) * -1;
+		var empty = false;
+
+		if (!width) {
+			empty = true;
+			width = WW.inc('-10%') >> 0;
+		}
 
 		if (config.center) {
 			top = Math.ceil((WH / 2) - (hs / 2));
@@ -892,12 +895,27 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 			top = '';
 			ml = '';
 			hh += 25;
+		} else {
+			if (top < 25) {
+				top = 25;
+				h -= 30;
+			}
 		}
 
-		var sw = SCROLLBARWIDTH();
-		ebody.css({ 'margin-right': sw ? sw : null });
-		emodal.css({ top: top, 'margin-left': ml });
-		earea.css({ 'max-height': h - hh - hf, 'width': width + 30 });
+		var css = { top: top, 'margin-left': ml };
+		if (empty)
+			css.width = width;
+
+		emodal.css(css);
+
+		if (config.scrollbar) {
+			earea.css({ height: h - hh - hf, width: width });
+			self.scrollbar && self.scrollbar.resize();
+		} else {
+			earea[0].$noscrollbarwidth = 0;
+			earea.css({ 'max-height': h - hh - hf, width: width });
+			earea.noscrollbar();
+		}
 	};
 
 	self.configure = function(key, value, init, prev) {
@@ -916,8 +934,8 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 				self.resize();
 				break;
 			case 'align':
-				prev && emodal.rclass(cls + '-align-' + prev);
-				value && emodal.aclass(cls + '-align-' + value);
+				prev && self.rclass(cls + '-align-' + prev);
+				value && self.aclass(cls + '-align-' + value);
 				self.resize();
 				break;
 			case 'icon':
@@ -1009,8 +1027,13 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 		config.reload && EXEC(config.reload, self);
 		config.default && DEFAULT(config.default, true);
 
+		if (config.scrollbar) {
+			!self.scrollbar && (self.scrollbar = SCROLLBAR(self.find(cls2 + '-body-area'), { visibleY: true }));
+		} else
+			$(cls2 + '-body-area').noscrollbar();
+
 		if (!isMOBILE && config.autofocus) {
-			var el = self.find(config.autofocus === true ? 'input[type="text"],input[type="password"],select,textarea' : config.autofocus);
+			var el = self.find(config.autofocus ? 'input[type="text"],input[type="password"],select,textarea' : config.autofocus);
 			el.length && setTimeout(function() {
 				el[0].focus();
 			}, 1500);
@@ -1019,7 +1042,10 @@ COMPONENT('modal', 'zindex:12;width:800;bg:true', function(self, config) {
 		var delay = first ? 500 : 0;
 
 		setTimeout(function() {
-			earea[0].scrollTop = 0;
+			if (self.scrollbar)
+				self.scrollbar.scrollTop(0);
+			else
+				earea[0].scrollTop = 0;
 			self.aclass(cls + '-visible');
 		}, 300 + delay);
 
