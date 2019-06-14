@@ -102,7 +102,7 @@
 
 			opt.items.push({ id: 'active', name: row.isinactive ? '@(Active)' : '@(Inactive)', icon: row.isinactive ? 'play-circle green' : 'stop-circle red' });
 			opt.items.push({ id: 'developer', name: row.isdeveloper ? '@(Remove developer account)' : '@(Switch to developer)', icon: 'wrench' });
-			opt.items.push({ id: 'sa', name: row.isdeveloper ? '@(Remove SA)' : '@(Switch to SA)', icon: 'user-shield' });
+			opt.items.push({ id: 'sa', name: row.sa ? '@(Remove SA)' : '@(Switch to SA)', icon: 'user-shield' });
 
 			if (!row.isconfirmed)
 				opt.items.push({ id: 'confirm', name: '@(Confirm)', icon: 'check-circle green' });
@@ -118,7 +118,7 @@
 		};
 
 		exports.remove = function(row) {
-			SETTER('confirm', 'show', '@(Are you sure you want to remove selected user <b>"{0}"</b>?)'.format(Thelpers.encode(row.name)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
+			SETTER('confirm', 'show', '@(Are you sure you want to remove selected user <b>"{0}"</b>?)'.format(Thelpers.encode(row.email)), ['"trash-o" @(Remove)', '@(Cancel)'], function(index) {
 				!index && AJAX('DELETE /api/admin/users/{id}'.arg(row), exports.refresh);
 			});
 		};
