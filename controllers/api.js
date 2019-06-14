@@ -48,14 +48,14 @@ exports.install = function() {
 		ROUTE('GET     /api/admin/apps/{id}/active/               *Admin/Apps      --> @active');
 
 		// Admin/Apps
-		ROUTE('GET     /api/admin/users/                           *Admin/Users    --> @query');
-		ROUTE('GET     /api/admin/users/{id}                       *Admin/Users    --> @read');
-		ROUTE('POST    /api/admin/users/{id}                       *Admin/Users    --> @update');
-		ROUTE('DELETE  /api/admin/users/{id}                       *Admin/Users    --> @remove');
-		ROUTE('GET     /api/admin/users/{id}/confirm/              *Admin/Users    --> @confirm');
-		ROUTE('GET     /api/admin/users/{id}/developer/            *Admin/Users    --> @developer');
-		ROUTE('GET     /api/admin/users/{id}/active/               *Admin/Users    --> @active');
-		ROUTE('GET     /api/admin/users/{id}/sa/                   *Admin/Users    --> @sa');
+		ROUTE('GET     /api/admin/users/                          *Admin/Users    --> @query');
+		ROUTE('GET     /api/admin/users/{id}                      *Admin/Users    --> @read');
+		ROUTE('POST    /api/admin/users/{id}                      *Admin/Users    --> @update');
+		ROUTE('DELETE  /api/admin/users/{id}                      *Admin/Users    --> @remove');
+		ROUTE('GET     /api/admin/users/{id}/confirm/             *Admin/Users    --> @confirm');
+		ROUTE('GET     /api/admin/users/{id}/developer/           *Admin/Users    --> @developer');
+		ROUTE('GET     /api/admin/users/{id}/active/              *Admin/Users    --> @active');
+		ROUTE('GET     /api/admin/users/{id}/sa/                  *Admin/Users    --> @sa');
 
 		// Admin/Oauth
 		ROUTE('GET     /api/admin/oauth/                          *Admin/OAuth     --> @query');
