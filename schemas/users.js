@@ -3,6 +3,8 @@ NEWSCHEMA('Users', function(schema) {
 	schema.define('email', 'Email', true);
 	schema.define('phone', 'Phone', true);
 	schema.define('password', String, true);
+	schema.define('isterms', Boolean, true);
+	schema.define('isprivacy', Boolean, true);
 
 	schema.setInsert(function($) {
 
@@ -18,6 +20,9 @@ NEWSCHEMA('Users', function(schema) {
 					return;
 				}
 
+				model.isterms = undefined;
+				model.isprivacy = undefined;
+
 				model.id = UID();
 				model.login = model.email;
 				model.dtcreated = NOW;
@@ -27,7 +32,7 @@ NEWSCHEMA('Users', function(schema) {
 				model.verifycode = FUNC.verifycode();
 				model.isdeveloper = PREF.defdeveloper == null || PREF.defdeveloper === true;
 
-				DBMS().insert('tbl_user', model).callback(function() {
+				DBMS().insert('tbl_user', model).callback(function(err) {
 
 					if (err) {
 						$.invalid(err);

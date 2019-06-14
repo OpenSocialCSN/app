@@ -77,20 +77,23 @@
 								<hr class="nmt" />
 								<div class="row">
 									<div class="col-sm-6 m">
-										<div data---="input__?.password__type:password;required:true__''" class="m">@(Password)</div>
+										<div data---="input__?.password__type:password;required:true__''">@(Password)</div>
 									</div>
 									<div class="col-sm-6 m">
-										<div data---="input__?.passwordagain__type:password;required:true__''" class="m">@(Password again)</div>
+										<div data---="input__?.passwordagain__type:password;required:true__''">@(Password again)</div>
 									</div>
 								</div>
+								<div data-bind="!?__show:value.password && value.passwordagain && value.password !== value.passwordagain__track:password,passwordagain" class="alert m red">
+									<i class="fa fa-warning"></i>@(Passwords <b>do not match</b>.)
+								</div>
 
-								<div data---="checkbox__?.terms__null__false">@(I agree with <b>Terms &amp; Conditions</b>)</div>
-								<div data---="checkbox__?.privacy__null__false">@(I agree with <b>Privacy Policy</b>)</div>
+								<div data---="checkbox__?.isterms__null__false">@(I agree with <b>Terms &amp; Conditions</b>)</div>
+								<div data---="checkbox__?.isprivacy__null__false">@(I agree with <b>Privacy Policy</b>)</div>
 								<br />
 
 								<div data---="error__?.response"></div>
 
-								<div data---="validation__?" class="m">
+								<div data---="validation__?__if:value.password && value.password===value.passwordagain" class="m">
 									<button name="submit" class="button exec" data-exec="main/signup_submit" disabled><i class="fa fa-unlock"></i>@(Sign-up)</button>
 									<div class="help"><span class="link" data-bind="null__click:main/signin"><i class="fa fa-chevron-left"></i>@(<b>Cancel</b> and go back)</span></div>
 								</div>

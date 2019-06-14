@@ -17,6 +17,9 @@ hr { border-color: #E0E0E0;}
 .color { color: $color; }
 .orange { color: $color; }
 
+.alert { background-color: #fffad7; border: 1px solid #EEE7BA; padding: 15px; border-radius: 3px; color: #988e56; font-size: 12px; line-height: 16px; }
+.alert i { margin-right: 5px; }
+
 .linkbutton { padding: 20px 0; border-radius: 3px; width: 100%; display: block; text-align: center; text-decoration: none !important; background-color: $color; color: white; font-weight: bold; font-size: 18px; font-family: $font; }
 .linkbutton i { margin-right: 8px; }
 .linkbutton:hover { opacity: 0.8; }
