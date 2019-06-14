@@ -24,3 +24,6 @@ error-emailaccount         : Account not found.
 error-adminoauth           : Missing record.
 error-oauth                : OAuth 2 service not found.
 error-oauthemail           : Your profile doesn't contain email address.
+
+isterms                    : You need to agree with Terms and Conditions
+isprivacy                  : You need to agree with Privacy policy
