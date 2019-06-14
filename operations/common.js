@@ -66,11 +66,11 @@ NEWOPERATION('logout', function($) {
 		MAIN.session.remove2($.user.id);
 
 		// Cancels all app sessions
-		OPERATION('app_cancel', null, () => $.redirect('/'), null, $);
+		OPERATION('app_cancel', null, () => $.redirect($.query.url || '/'), null, $);
 
 	} else {
 		MAIN.session.remove($.controller.sessionid);
-		$.redirect('/');
+		$.redirect($.query.url || '/');
 	}
 
 });
@@ -82,6 +82,7 @@ NEWOPERATION('app_cancel', function($) {
 
 	var db = DBMS();
 	var builder = db.find('view_oauth_session');
+
 	builder.where('userid', $.user.id);
 	$.params.sessionid && builder.where('id', $.params.sessionid);
 	builder.fields('id,profileid,appid,iscanceled,urllogout,client_id');
@@ -205,4 +206,12 @@ NEWOPERATION('links', function($) {
 
 NEWOPERATION('links_disable', function($) {
 	$.DB().modify('tbl_user_oauth', { '!isdisabled': 1 }).where('userid', $.user.id).where('id', $.id).callback($.done());
+});
+
+NEWOPERATION('user_unlink', function($) {
+
+
+	// $.DB().find('tbl_user_oauth
+
+
 });
