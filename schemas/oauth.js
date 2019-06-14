@@ -243,3 +243,51 @@ NEWSCHEMA('OAuth/Profile', function(schema) {
 	});
 
 });
+
+NEWSCHEMA('OAuth/Logout', function(schema) {
+
+	schema.addWorkflow('exec', function($) {
+
+		$.error.setTransform('simple');
+
+		var bearer = $.controller.req.headers.authorization || '';
+
+		bearer = bearer.substring(bearer.indexOf(' ') + 1).trim();
+
+		if (!bearer) {
+			$.invalid('error-appbearer');
+			return;
+		}
+
+		var db = $.DB();
+
+		db.read('view_oauth_session').make(function(builder) {
+			builder.where('id', bearer.substring(0, bearer.indexOf('_')) || '');
+			builder.where('bearer', bearer);
+			builder.fields('id,userid');
+		});
+
+		// Error handling
+		db.must('error-appbearer');
+
+		db.callback(function(err, response) {
+
+			if (err) {
+				$.callback();
+				return;
+			}
+
+			// Small internal hacks
+			$.controller.params.sessionid = response.id;
+			$.req.user = { id: response.userid };
+
+			OPERATION('app_cancel', EMPTYOBJECT, function(err, response) {
+				console.log(err, response);
+			}, $);
+
+			$.success();
+		});
+
+	});
+
+});
