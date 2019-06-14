@@ -69,7 +69,7 @@
 	<script type="text/html" data-size="150px,0,150px,135px,120px">
 		<tr>
 			<td class="fs12 gray"><i class="fa fa-info-circle blue"></i> {{ loggername }}</td>
-			<td class="fs12"><i class="fa fa-{{ if device.device.type === 'mobile' }}mobile{{ else if device.device.type === 'tablet' }}tablet{{ else }}desktop{{ fi }} w20"></i>{{ device.browser.name }}, {{ device.os.name }} / <span class="silver">{{ city | def }}</span></td>
+			<td class="fs12"><i class="fa fa-{{ if device.device.type === 'mobile' }}mobile{{ else if device.device.type === 'tablet' }}tablet{{ else }}desktop{{ fi }} w20"></i>{{ device.browser.name }}, {{ device.os.name }} / <span class="silver">{{ if city }}{{ city | def }}{{ else }}{{ country | def }}{{ fi }}</span></td>
 			<td class="fs12">{{ if profilename }}<div class="gray hellip"><i class="far fa-user-circle mr5"></i>{{ profilename }}</div>{{ fi }}</td>
 			<td class="fs12"><i class="fa fa-wifi green mr5"></i>{{ ip }}</td>
 			<td class="fs12 right silver">{{ dtcreated | time }}</td>
