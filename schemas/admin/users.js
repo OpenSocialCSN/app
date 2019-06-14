@@ -82,4 +82,11 @@ NEWSCHEMA('Admin/Users', function(schema) {
 		});
 
 	});
+
+	schema.setRemove(function($) {
+		if (FUNC.unauthorized($))
+			return;
+		$.DB().modify('tbl_user', { isremoved: true, dtupdated: NOW }).where('id', $.id).callback($.done());
+	});
+
 });
