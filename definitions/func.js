@@ -85,12 +85,25 @@ FUNC.geoip = function(ip, callback) {
 		}
 
 		RESTBuilder.make(function(builder) {
-			builder.url('https://api.ipdata.co/{0}?api-key={1}'.format(ip, CONF.geoipkey));
+			builder.url('https://tools.keycdn.com/geo.json?host={0}'.format(ip));
 			builder.get();
 			builder.exec(function(err, response) {
 
 				if (err) {
 					callback(err, null);
+					return;
+				}
+
+				if (response.status !== 'success') {
+					callback(response.description, null);
+					return;
+				}
+
+				response = response.data ? response.data.geo : null;
+
+				// Safety catch
+				if (!response) {
+					callback('No GEO IP data', null);
 					return;
 				}
 
@@ -111,7 +124,7 @@ FUNC.geoip = function(ip, callback) {
 				model.zip = response.postal;
 				model.region = response.region;
 				model.regioncode = response.region_code;
-				model.code = response.calling_code;
+				model.code = response.metro_code;
 				model.dtupdated = NOW;
 
 				var db = DBMS();
