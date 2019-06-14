@@ -1,6 +1,4 @@
-require('dbms').init(CONF.database, null, function(err, sql) {
-	console.log('ERROR', err.toString(), '--->', sql);
-});
+require('dbms').init(CONF.database, null, ERROR('dbms'));
 
 ON('ready', function() {
 	DBMS().modify('tbl_user', { isonline: false }).where('isonline', true);
