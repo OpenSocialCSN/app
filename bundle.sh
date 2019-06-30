@@ -11,8 +11,7 @@ cp -a ../resources/ resources
 cp -a ../tasks/ tasks
 cp -a ../views/ views
 
-tpm create iam.package
-cp iam.package ../iam.bundle
+totaljs --bundle ../iam.bundle
 
 cd ..
 rm -rf .bundle
