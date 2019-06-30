@@ -2,7 +2,7 @@ NEWSCHEMA('Profiles', function(schema) {
 
 	schema.define('photo', 'String(50)');
 	schema.define('countryid', 'String(3)');
-	schema.define('nick', 'String(50)', true);
+	schema.define('nick', 'String(50)');
 	schema.define('name', 'String(50)', true);
 	schema.define('language', 'String(2)');
 	schema.define('firstname', 'String(50)', true);

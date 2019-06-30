@@ -1,14 +1,17 @@
-COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:name;after:\\:', function(self, config) {
+COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:name;direxclude:false;searchalign:1;after:\\:', function(self, config) {
 
 	var cls = 'ui-input';
 	var cls2 = '.' + cls;
 	var input, placeholder, dirsource, binded, customvalidator, mask;
 
+	self.nocompile();
+	self.bindvisible(20);
+
 	self.init = function() {
 		Thelpers.ui_input_icon = function(val) {
 			return val.charAt(0) === '!' ? ('<span class="ui-input-icon-custom">' + val.substring(1) + '</span>') : ('<i class="fa fa-' + val + '"></i>');
 		};
-		W.ui_input_template = Tangular.compile(('{{ if label }}<div class="{0}-label">{{ if icon }}<i class="fa fa-{{ icon }}"></i>{{ fi }}{{ label | raw }}{{ after }}</div>{{ fi }}<div class="{0}-control{{ if licon }} {0}-licon{{ fi }}{{ if ricon || (type === \'number\' && increment) }} {0}-ricon{{ fi }}">{{ if ricon || (type === \'number\' && increment) }}<div class="{0}-icon-right{{ if type === \'number\' && increment }} {0}-increment{{ else if riconclick || type === \'date\' || type === \'time\' || type === \'search\' || type === \'password\' }} {0}-click{{ fi }}">{{ if type === \'number\' }}<i class="fa fa-caret-up"></i><i class="fa fa-caret-down"></i>{{ else }}{{ ricon | ui_input_icon }}{{ fi }}</div>{{ fi }}{{ if licon }}<div class="{0}-icon-left{{ if liconclick }} {0}-click{{ fi }}">{{ licon | ui_input_icon }}</div>{{ fi }}<div class="{0}-input{{ if align === 1 || align === \'center\' }} center{{ else if align === 2 || align === \'right\' }} right{{ fi }}">{{ if placeholder && !innerlabel }}<div class="{0}-placeholder">{{ placeholder }}</div>{{ fi }}<input type="{{ if !dirsource && type === \'password\' }}password{{ else }}text{{ fi }}"{{ if autofill }} name="{{ PATH }}"{{ else }} autocomplete="' + Date.now() + '"{{ fi }}{{ if dirsource }} readonly{{ else }} data-jc-bind=""{{ fi }}{{ if maxlength > 0}} maxlength="{{ maxlength }}"{{ fi }}{{ if autofocus }} autofocus{{ fi }} /></div></div>{{ if error }}<div class="{0}-error hidden"><i class="fa fa-warning"></i> {{ error }}</div>{{ fi }}').format(cls));
+		W.ui_input_template = Tangular.compile(('{{ if label }}<div class="{0}-label">{{ if icon }}<i class="fa fa-{{ icon }}"></i>{{ fi }}{{ label }}{{ after }}</div>{{ fi }}<div class="{0}-control{{ if licon }} {0}-licon{{ fi }}{{ if ricon || (type === \'number\' && increment) }} {0}-ricon{{ fi }}">{{ if ricon || (type === \'number\' && increment) }}<div class="{0}-icon-right{{ if type === \'number\' && increment }} {0}-increment{{ else if riconclick || type === \'date\' || type === \'time\' || (type === \'search\' && searchalign === 1) || type === \'password\' }} {0}-click{{ fi }}">{{ if type === \'number\' }}<i class="fa fa-caret-up"></i><i class="fa fa-caret-down"></i>{{ else }}{{ ricon | ui_input_icon }}{{ fi }}</div>{{ fi }}{{ if licon }}<div class="{0}-icon-left{{ if liconclick || (type === \'search\' && searchalign !== 1) }} {0}-click{{ fi }}">{{ licon | ui_input_icon }}</div>{{ fi }}<div class="{0}-input{{ if align === 1 || align === \'center\' }} center{{ else if align === 2 || align === \'right\' }} right{{ fi }}">{{ if placeholder && !innerlabel }}<div class="{0}-placeholder">{{ placeholder }}</div>{{ fi }}<input type="{{ if !dirsource && type === \'password\' }}password{{ else }}text{{ fi }}"{{ if autofill }} name="{{ PATH }}"{{ else }} autocomplete="input' + Date.now() + '"{{ fi }}{{ if dirsource }} readonly{{ else }} data-jc-bind=""{{ fi }}{{ if maxlength > 0}} maxlength="{{ maxlength }}"{{ fi }}{{ if autofocus }} autofocus{{ fi }} /></div></div>{{ if error }}<div class="{0}-error hidden"><i class="fa fa-warning"></i> {{ error }}</div>{{ fi }}').format(cls));
 	};
 
 	self.make = function() {
@@ -31,17 +34,30 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 
 		self.event('focus', 'input', function() {
 			self.aclass(cls + '-focused');
-			config.autocomplete && EXEC(config.autocomplete, self, input.parent());
+			config.autocomplete && EXEC(self.makepath(config.autocomplete), self, input.parent());
 			if (config.autosource) {
 				var opt = {};
 				opt.element = self.element;
-				opt.search = GET(config.autosource);
+				opt.search = GET(self.makepath(config.autosource));
 				opt.callback = function(value) {
-					self.set(typeof(value) === 'string' ? value : value[config.autovalue], 2);
-					self.change();
-					self.bindvalue();
+					var val = typeof(value) === 'string' ? value : value[config.autovalue];
+					if (config.autoexec) {
+						EXEC(self.makepath(config.autoexec), value, function(val) {
+							self.set(val, 2);
+							self.change();
+							self.bindvalue();
+						});
+					} else {
+						self.set(val, 2);
+						self.change();
+						self.bindvalue();
+					}
 				};
 				SETTER('autocomplete', 'show', opt);
+			} else if (config.mask) {
+				setTimeout(function(input) {
+					input.selectionStart = input.selectionEnd = 0;
+				}, 50, this);
 			}
 		});
 
@@ -59,14 +75,20 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 			var code = e.which;
 
 			if (t.readOnly || config.disabled) {
-				e.preventDefault();
-				e.stopPropagation();
-				//self.curpos(0);
+				// TAB
+				if (e.keyCode !== 9) {
+					if (config.dirsource) {
+						self.find(cls2 + '-control').trigger('click');
+						return;
+					}
+					e.preventDefault();
+					e.stopPropagation();
+				}
 				return;
 			}
 
 			if (!config.disabled && config.dirsource && (code === 13 || code > 30)) {
-				self.element.find(cls2 + '-control').trigger('click');
+				self.find(cls2 + '-control').trigger('click');
 				return;
 			}
 
@@ -155,6 +177,7 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 					e.stopPropagation();
 				}
 			}
+
 		});
 
 		self.event('blur', 'input', function() {
@@ -169,7 +192,8 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 			var opt = {};
 			opt.element = self.find(cls2 + '-control');
 			opt.items = dirsource;
-			opt.offsetY = -1;
+			opt.offsetY = -1 + (config.diroffsety || 0);
+			opt.offsetX = 0 + (config.diroffsetx || 0);
 			opt.placeholder = config.dirplaceholder;
 			opt.render = config.dirrender ? GET(config.dirrender) : null;
 			opt.custom = !!config.dircustom;
@@ -216,7 +240,13 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 						self.change();
 						self.bindvalue();
 					});
-				} else if (!custom) {
+				} else if (custom) {
+					if (val) {
+						self.set(val, 2);
+						self.change();
+						self.bindvalue();
+					}
+				} else {
 					self.set(val, 2);
 					self.change();
 					self.bindvalue();
@@ -231,7 +261,7 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 				if (config.dirsource) {
 					e.preventDefault();
 					e.stopPropagation();
-					self.element.find(cls2 + '-control').trigger('click');
+					self.find(cls2 + '-control').trigger('click');
 				} else
 					input.focus();
 			}
@@ -283,9 +313,12 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 			}
 
 			if (left && config.liconclick)
-				EXEC(config.liconclick, self, el);
+				EXEC(self.makepath(config.liconclick), self, el);
 			else if (config.riconclick)
-				EXEC(config.riconclick, self, el);
+				EXEC(self.makepath(config.riconclick), self, el);
+			else if (left && config.type === 'search')
+				self.set('');
+
 		});
 	};
 
@@ -430,7 +463,7 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 		self.tclass(cls + '-binded', is);
 
 		if (config.type === 'search')
-			self.find(cls2 + '-icon-right').find('i').tclass(config.ricon, !is).tclass('fa-times', is);
+			self.find(cls2 + '-icon-' + (config.searchalign === 1 ? 'right' : 'left')).find('i').tclass(config.searchalign === 1 ? config.ricon : config.licon, !is).tclass('fa-times', is);
 	};
 
 	self.bindvalue = function() {
@@ -474,7 +507,10 @@ COMPONENT('input', 'maxlength:200;dirkey:name;dirvalue:id;increment:1;autovalue:
 				if (!config.align && !config.innerlabel)
 					config.align = 1;
 			} else if (config.type === 'search')
-				config.ricon = 'search';
+				if (config.searchalign === 1)
+					config.ricon = 'search';
+				else
+					config.licon = 'search';
 			else if (config.type === 'password')
 				config.ricon = 'eye';
 			else if (config.type === 'number') {
@@ -1883,6 +1919,7 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 		});
 
 		self.event('click', cls2 + '-button', function(e) {
+			skipclear = false;
 			input.val('');
 			self.search();
 			e.stopPropagation();
@@ -1955,16 +1992,14 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 					selectedindex--;
 					if (selectedindex < 0)
 						selectedindex = 0;
-					else
-						self.move();
+					self.move();
 					break;
 				case 40: // down
 					o = true;
-					selectedindex++ ;
+					selectedindex++;
 					if (selectedindex >= resultscount)
 						selectedindex = resultscount;
-					else
-						self.move();
+					self.move();
 					break;
 			}
 
@@ -1993,8 +2028,13 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 		var counter = 0;
 		var scroller = container.parent();
 		var h = scroller.height();
+		var li = container.find('li');
+		var hli = li.eq(0).innerHeight() || 30;
+		var was = false;
+		var last = -1;
+		var lastselected = 0;
 
-		container.find('li').each(function() {
+		li.each(function(index) {
 			var el = $(this);
 
 			if (el.hclass('hidden')) {
@@ -2006,14 +2046,24 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 			el.tclass('current', is);
 
 			if (is) {
-				var t = (h * counter) - h;
-				if ((t + h * 4) > h)
-					scroller.scrollTop(t - h);
+				was = true;
+				var t = (hli * (counter || 1));
+				var f = Math.ceil((h / hli) / 2);
+				if (counter > f)
+					scroller[0].scrollTop = (t + f) - (h / 2.8 >> 0);
 				else
-					scroller.scrollTop(0);
+					scroller[0].scrollTop = 0;
 			}
+
 			counter++;
+			last = index;
+			lastselected++;
 		});
+
+		if (!was && last >= 0) {
+			selectedindex = lastselected;
+			li.eq(last).aclass('current');
+		}
 	};
 
 	self.search = function(value) {
@@ -2114,6 +2164,7 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 		self.initializing = true;
 		self.target = el;
 		opt.ajax = null;
+		self.ajaxold = null;
 
 		var element = $(opt.element);
 		var callback = opt.callback;
@@ -2178,8 +2229,9 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 
 		self.target = element[0];
 
+		var w = element.width();
 		var offset = element.offset();
-		var width = element.width() + (opt.offsetWidth || 0);
+		var width = w + (opt.offsetWidth || 0);
 
 		if (opt.minwidth && width < opt.minwidth)
 			width = opt.minwidth;
@@ -2194,7 +2246,28 @@ COMPONENT('directory', 'minwidth:200', function(self, config) {
 		var scroller = self.find(cls2 + '-container').css('width', width + 30);
 		container.html(builder);
 
-		var options = { left: offset.left + (opt.offsetX || 0), top: offset.top + (opt.offsetY || 0), width: width };
+		var options = { left: 0, top: 0, width: width };
+
+		switch (opt.align) {
+			case 'center':
+				options.left = Math.ceil((offset.left - width / 2) + (width / 2));
+				break;
+			case 'right':
+				options.left = (offset.left - width) + w;
+				break;
+			default:
+				options.left = offset.left;
+				break;
+		}
+
+		options.top = opt.position === 'bottom' ? ((offset.top - self.height()) + element.height()) : offset.top;
+
+		if (opt.offsetX)
+			options.left += opt.offsetX;
+
+		if (opt.offsetY)
+			options.top += opt.offsetY;
+
 		self.css(options);
 
 		!isMOBILE && setTimeout(function() {
@@ -4109,7 +4182,7 @@ COMPONENT('enter', 'validate:true', function(self, config) {
 	};
 });
 
-COMPONENT('pin', 'blank:●;count:6', function(self, config) {
+COMPONENT('pin', 'blank:●;count:6;hide:false;mask:true', function(self, config) {
 
 	var reg_validation = /[0-9]/;
 	var inputs = null;
@@ -4123,16 +4196,14 @@ COMPONENT('pin', 'blank:●;count:6', function(self, config) {
 	};
 
 	self.configure = function(key, value, init) {
-		if (init)
-			return;
 		switch (key) {
 			case 'count':
-				self.redraw();
+				!init && self.redraw();
 				break;
 			case 'disabled':
 				self.find('input').prop('disabled', value);
 				self.tclass('ui-disabled', value);
-				!value && self.state(1, 1);
+				!init && !value && self.state(1, 1);
 				break;
 		}
 	};
@@ -4157,11 +4228,22 @@ COMPONENT('pin', 'blank:●;count:6', function(self, config) {
 				var c = String.fromCharCode(e.charCode);
 				if (t.value !== c)
 					t.value = c;
+
+				if (config.mask) {
+					if (config.hide) {
+						self.maskforce(t);
+					} else
+						self.mask();
+				}
+				else {
+					t.setAttribute('data-value', t.value);
+					self.getter();
+				}
+
 				setTimeout(function(el) {
 					var next = el.parent().next().find('input');
 					next.length && next.focus();
 				}, 50, $(t));
-				self.mask();
 			} else if (c > 30)
 				e.preventDefault();
 		});
@@ -4180,15 +4262,21 @@ COMPONENT('pin', 'blank:●;count:6', function(self, config) {
 		inputs = self.find('input');
 	};
 
+	self.maskforce2 = function() {
+		self.maskforce(this);
+	};
+
+	self.maskforce = function(input) {
+		if (input.value && reg_validation.test(input.value)) {
+			input.setAttribute('data-value', input.value);
+			input.value = config.blank;
+			self.getter();
+		}
+	};
+
 	self.mask = function() {
 		setTimeout2(self.id + '.mask', function() {
-			inputs.each(function() {
-				if (this.value && reg_validation.test(this.value)) {
-					this.setAttribute('data-value', this.value);
-					this.value = config.blank;
-				}
-			});
-			self.getter();
+			inputs.each(self.maskforce2);
 		}, 300);
 	};
 
@@ -4216,8 +4304,11 @@ COMPONENT('pin', 'blank:●;count:6', function(self, config) {
 			return;
 		}
 
+		if (value == null)
+			value = '';
+
 		inputs.each(function(index) {
-			this.setAttribute('data-value', (value || '').substring(index, index + 1));
+			this.setAttribute('data-value', value.substring(index, index + 1));
 			this.value = value ? config.blank : '';
 		});
 	};
@@ -4412,23 +4503,39 @@ COMPONENT('menu', function(self) {
 	self.nocompile && self.nocompile();
 
 	var cls = 'ui-menu';
+	var cls2 = '.' + cls;
+
 	var is = false;
+	var issubmenu = false;
+	var isopen = false;
 	var events = {};
-	var ul;
+	var ul, children, prevsub;
 
 	self.make = function() {
 		self.aclass(cls + ' hidden');
-		self.append('<ul></ul>');
-		ul = self.find('ul');
+		self.append('<div class="{0}-items"><ul></ul></div><div class="{0}-submenu hidden"><ul></ul></div>'.format(cls));
+		ul = self.find(cls2 + '-items').find('ul');
+		children = self.find(cls2 + '-submenu');
 
-		self.event('touchstart mousedown', 'li', function(e) {
+		self.event('click', 'li', function(e) {
+
+			clearTimeout2(self.ID);
+
 			var el = $(this);
 			if (el.hclass(cls + '-divider')) {
 				e.preventDefault();
 				e.stopPropagation();
 			} else {
-				self.opt.callback(self.opt.items[el.index()]);
-				self.hide();
+
+				var index = el.attrd('index').split('-');
+				if (index.length > 1) {
+					// submenu
+					self.opt.callback(self.opt.items[+index[0]].children[+index[1]]);
+					self.hide();
+				} else if (!issubmenu) {
+					self.opt.callback(self.opt.items[+index[0]]);
+					self.hide();
+				}
 			}
 		});
 
@@ -4442,21 +4549,78 @@ COMPONENT('menu', function(self) {
 		self.on('resize', events.hide);
 
 		events.click = function(e) {
-			if (is && (!self.target || (self.target !== e.target && !self.target.contains(e.target))))
-				self.hide();
+			if (is && !isopen && (!self.target || (self.target !== e.target && !self.target.contains(e.target))))
+				setTimeout2(self.ID, self.hide, 300);
+		};
+
+		events.hidechildren = function() {
+			if ($(this.parentNode.parentNode).hclass(cls + '-items')) {
+				if (prevsub && prevsub[0] !== this) {
+					prevsub.rclass(cls + '-selected');
+					prevsub = null;
+					children.aclass('hidden');
+					issubmenu = false;
+				}
+			}
+		};
+
+		events.children = function() {
+
+			if (prevsub && prevsub[0] !== this) {
+				prevsub.rclass(cls + '-selected');
+				prevsub = null;
+			}
+
+			issubmenu = true;
+			isopen = true;
+
+			setTimeout(function() {
+				isopen = false;
+			}, 500);
+
+			var el = prevsub = $(this);
+			var index = +el.attrd('index');
+			var item = self.opt.items[index];
+
+			el.aclass(cls + '-selected');
+
+			var html = self.makehtml(item.children, index);
+			children.find('ul').html(html);
+			children.rclass('hidden');
+
+			var css = {};
+			var offset = el.position();
+
+			css.left = ul.width() - 5;
+			css.top = offset.top - 5;
+
+			var offsetX = offset.left;
+
+			offset = self.element.offset();
+
+			var w = children.width();
+			var left = offset.left + css.left + w;
+			if (left > WW + 30)
+				css.left = (offsetX - w) + 5;
+
+			children.css(css);
 		};
 	};
 
 	self.bindevents = function() {
 		events.is = true;
+		$(document).on('touchstart mouseenter mousedown', cls2 + '-children', events.children);
 		$(document).on('touchstart mousedown', events.click);
 		$(window).on('scroll', events.hide);
+		self.element.on('mouseenter', 'li', events.hidechildren);
 	};
 
 	self.unbindevents = function() {
 		events.is = false;
+		$(document).off('touchstart mouseenter mousedown', cls2 + '-children', events.children);
 		$(document).off('touchstart mousedown', events.click);
 		$(window).off('scroll', events.hide);
+		self.element.off('mouseenter', 'li', events.hidechildren);
 	};
 
 	self.showxy = function(x, y, items, callback) {
@@ -4466,6 +4630,49 @@ COMPONENT('menu', function(self) {
 		opt.items = items;
 		opt.callback = callback;
 		self.show(opt);
+	};
+
+	self.makehtml = function(items, index) {
+		var builder = [];
+		var tmp;
+
+		for (var i = 0; i < items.length; i++) {
+			var item = items[i];
+
+			if (typeof(item) === 'string') {
+				// caption or divider
+				if (item === '-')
+					tmp = '<hr />';
+				else
+					tmp = '<span>{0}</span>'.format(item);
+				builder.push('<li class="{0}-divider">{1}</li>'.format(cls, tmp));
+				continue;
+			}
+
+			var cn = item.classname || '';
+			var icon = '';
+
+			if (item.icon)
+				icon = '<i class="{0}"></i>'.format(item.icon.charAt(0) === '!' ? item.icon.substring(1) : ('fa fa-' + item.icon));
+			else
+				cn = (cn ? ' ' : '') + cls + '-nofa';
+
+			tmp = '';
+
+			if (index == null && item.children && item.children.length) {
+				cn += (cn ? ' ' : '') + cls + '-children';
+				tmp += '<i class="fa fa-play pull-right"></i>';
+			}
+
+			tmp += '<div class="{0}-name">{1}{2}{3}</div>'.format(cls, icon, item.name, item.shortcut ? '<b>{0}</b>'.format(item.shortcut) : '');
+
+			if (item.note)
+				tmp += '<div class="ui-menu-note">{0}</div>'.format(item.note);
+
+			builder.push('<li class="{0}" data-index="{2}">{1}</li>'.format(cn, tmp, (index != null ? (index + '-') : '') + i));
+		}
+
+		return builder.join('');
 	};
 
 	self.show = function(opt) {
@@ -4487,19 +4694,21 @@ COMPONENT('menu', function(self) {
 			return;
 		}
 
-		var builder = [];
+		var tmp;
 
 		self.target = tmp;
 		self.opt = opt;
 
-		for (var i = 0; i < opt.items.length; i++) {
-			var item = opt.items[i];
-			builder.push(typeof(item) == 'string' ? '<li class="{1}-divider">{0}</li>'.format(item === '-' ? '<hr />' : ('<span>' + item + '</span>'), cls) : '<li{2}>{3}{0}{1}</li>'.format(item.icon ? '<i class="fa fa-{0}"></i>'.format(item.icon) : '', item.name, item.icon ? '' : (' class="' + cls + '-nofa"'), item.shortcut ? '<b>{0}</b>'.format(item.shortcut) : ''));
-		}
+		isopen = false;
+		issubmenu = false;
+		prevsub = null;
 
 		var css = {};
+		children.aclass('hidden');
+		children.find('ul').empty();
+		clearTimeout2(self.ID);
 
-		ul.html(builder.join(''));
+		ul.html(self.makehtml(opt.items));
 
 		if (is) {
 			css.left = 0;
@@ -4529,7 +4738,9 @@ COMPONENT('menu', function(self) {
 					css.left = offset.left;
 					break;
 			}
-			css.top = offset.top + target.innerHeight() + 10;
+
+			css.top = opt.position === 'bottom' ? (offset.top - self.element.height() - 10) : (offset.top + target.innerHeight() + 10);
+
 		} else {
 			css.left = opt.x;
 			css.top = opt.y;
@@ -4547,6 +4758,7 @@ COMPONENT('menu', function(self) {
 	self.hide = function() {
 		events.is && self.unbindevents();
 		is = false;
+		self.opt && self.opt.hide && self.opt.hide();
 		self.target = null;
 		self.opt = null;
 		self.aclass('hidden');
